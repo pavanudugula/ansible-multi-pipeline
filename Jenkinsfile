@@ -14,7 +14,6 @@ pipeline {
         stage('MVN Build') {
           steps{
              sh "mvn -Dmaven.test.failure.ignore=true clean package"
-             sh "mv target/websocket-demo-0.0.1-SNAPSHOT.jar target/chatapp.jar"
           }
        }
        stage('MVN Testing') {
@@ -36,32 +35,16 @@ pipeline {
             }
        }
        stage('Get ansible code') {
-           when {
-                expression {choice == '1'}
-            }
-           
           steps{
              
                 git "https://github.com/pavanudugula/tomcat-playbook.git"
           }
        }
         stage('execute ansible') {
-            when {
-                expression {choice == '2'}
-            }
           steps{
              
                 sshagent(['tomcat-pass']) {
                  ansiblePlaybook inventory:  'stage.inv',disableHostKeyChecking: true,  playbook: 'tomcat.yml'
-              }
-
-          }
-       }
-       stage('deploy jar in tomcat') {
-            
-          steps{
-            sshagent(['tomcat-pass']) {
-              sh "scp -r -o StrictHostKeyChecking=no target/chatapp.jar root@tomcat:/opt/tomcat/webapps"
               }
 
           }
